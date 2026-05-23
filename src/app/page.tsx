@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import {
@@ -50,7 +51,46 @@ const focusAreas = [
   },
 ];
 
-const featuredProjects = [
+type FeaturedProject = {
+  name: string;
+  role: string;
+  year: string;
+  image: string;
+  video?: string;
+  href: string;
+  linkLabel: string;
+  accent: string;
+  imageFit?: "cover" | "contain";
+  summary: string;
+  points: string[];
+  tags: string[];
+};
+
+const featuredProjects: FeaturedProject[] = [
+  {
+    name: "Handof for Linear",
+    role: "Creator / Full-stack Product Engineer",
+    year: "Figma plugin",
+    image: "/projects/handof-figma-linear.webp",
+    video: "/projects/handof-demo.mp4",
+    href: "https://www.figma.com/community/plugin/1582779918962363836/handof-for-linear",
+    linkLabel: "View plugin",
+    accent: "bg-[#5e6ad2]",
+    imageFit: "contain",
+    summary:
+      "A FigJam-to-Linear plugin that turns workshop output into tracked engineering work.",
+    points: [
+      "Creates and updates Linear issues from selected FigJam sticky notes, shapes, frames, and text while preserving node context.",
+      "Built Google sign-in, Linear OAuth, persistent sessions, Supabase link storage, FigJam back-links, and Mixpanel activation telemetry.",
+    ],
+    tags: [
+      "Figma Plugin API",
+      "TypeScript",
+      "Linear API",
+      "OAuth",
+      "Supabase",
+    ],
+  },
   {
     name: "LottieFiles Creator",
     role: "Senior Frontend Developer",
@@ -301,6 +341,70 @@ function BrowserChrome({ children }: { children: React.ReactNode }) {
   );
 }
 
+function ProjectMedia({ project }: { project: FeaturedProject }) {
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const fitClass =
+    project.imageFit === "contain" ? "object-contain" : "object-cover";
+
+  useEffect(() => {
+    if (!project.video || shouldLoadVideo) {
+      return;
+    }
+
+    const media = mediaRef.current;
+    if (!media) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoadVideo(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "360px 0px" },
+    );
+
+    observer.observe(media);
+
+    return () => observer.disconnect();
+  }, [project.video, shouldLoadVideo]);
+
+  return (
+    <div
+      ref={mediaRef}
+      className={`relative min-h-[260px] overflow-hidden sm:min-h-[360px] ${
+        project.imageFit === "contain" ? "bg-[#f5f9ff]" : "bg-[#171512]"
+      }`}
+    >
+      {project.video && shouldLoadVideo ? (
+        <video
+          className={`absolute inset-0 size-full transition duration-700 hover:scale-[1.03] ${fitClass}`}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="none"
+          poster={project.image}
+          aria-label={`${project.name} product walkthrough`}
+        >
+          <source src={project.video} type="video/mp4" />
+        </video>
+      ) : (
+        <Image
+          src={project.image}
+          alt={`${project.name} interface screenshot`}
+          fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
+          className={`transition duration-700 hover:scale-[1.03] ${fitClass}`}
+        />
+      )}
+    </div>
+  );
+}
+
 function ScreenplayMock() {
   return (
     <BrowserChrome>
@@ -422,30 +526,16 @@ export default function Home() {
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(#e6ddcf_1px,transparent_1px),linear-gradient(90deg,#e6ddcf_1px,transparent_1px)] bg-[size:52px_52px] opacity-55" />
         <div className="absolute inset-x-0 bottom-0 -z-10 h-56 bg-gradient-to-t from-[#f7f3eb] to-transparent" />
         <div className="mx-auto grid min-h-[calc(100vh-65px)] max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.03fr_0.97fr] lg:px-8 lg:py-16">
-          <motion.div
-            variants={container}
-            initial="hidden"
-            animate="show"
-            className="max-w-4xl"
-          >
-            <motion.h1
-              variants={item}
-              className="max-w-4xl text-balance text-5xl font-semibold leading-[0.98] tracking-tight text-[#171512] sm:text-6xl lg:text-7xl"
-            >
+          <div className="max-w-4xl">
+            <h1 className="max-w-4xl text-balance text-5xl font-semibold leading-[0.98] tracking-tight text-[#171512] sm:text-6xl lg:text-7xl">
               Building sharp, humane interfaces for complex products.
-            </motion.h1>
-            <motion.p
-              variants={item}
-              className="mt-7 max-w-2xl text-pretty text-lg leading-8 text-[#5f5a53] sm:text-xl"
-            >
+            </h1>
+            <p className="mt-7 max-w-2xl text-pretty text-lg leading-8 text-[#5f5a53] sm:text-xl">
               I design and ship AI-assisted editor UX, design-system primitives,
               high-performance dashboards, and product workflows in React,
               TypeScript, Next.js, Vue, Tailwind, and Framer Motion.
-            </motion.p>
-            <motion.div
-              variants={item}
-              className="mt-8 flex flex-col gap-3 sm:flex-row"
-            >
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <ExternalLink href="#projects" variant="primary">
                 <MousePointer2 className="size-4" />
                 View projects
@@ -458,15 +548,10 @@ export default function Home() {
                 Toptal
                 <ArrowUpRight className="size-4" />
               </ExternalLink>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 24, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.65, delay: 0.2, ease: smoothEase }}
-            className="relative"
-          >
+          <div className="relative">
             <div className="grid gap-4 sm:grid-cols-[0.85fr_1.15fr] lg:grid-cols-1 xl:grid-cols-[0.86fr_1.14fr]">
               <div className="overflow-hidden rounded-lg border border-[#d8d0c2] bg-white shadow-[0_24px_70px_rgba(34,26,17,0.12)]">
                 <div className="relative aspect-square">
@@ -508,7 +593,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -552,30 +637,7 @@ export default function Home() {
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.6, delay: index * 0.05 }}
             >
-              <div className="relative min-h-[260px] overflow-hidden bg-[#171512] sm:min-h-[360px]">
-                {project.video ? (
-                  <video
-                    className="absolute inset-0 size-full object-cover transition duration-700 hover:scale-[1.03]"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    poster={project.image}
-                    aria-label={`${project.name} product walkthrough`}
-                  >
-                    <source src={project.video} type="video/mp4" />
-                  </video>
-                ) : (
-                  <Image
-                    src={project.image}
-                    alt={`${project.name} interface screenshot`}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover transition duration-700 hover:scale-[1.03]"
-                  />
-                )}
-              </div>
+              <ProjectMedia project={project} />
               <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
                 <div>
                   <div className="mb-5 flex flex-wrap items-center gap-3">
