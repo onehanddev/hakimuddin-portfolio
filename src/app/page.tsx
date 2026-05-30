@@ -14,6 +14,7 @@ import {
   Mail,
   MousePointer2,
   PanelsTopLeft,
+  Play,
   Sparkles,
   TerminalSquare,
 } from "lucide-react";
@@ -419,11 +420,12 @@ function SectionHeading({
 function ProjectMedia({ project }: { project: FeaturedProject }) {
   const mediaRef = useRef<HTMLDivElement>(null);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const hasVideo = Boolean(project.video);
   const fitClass =
     project.imageFit === "contain" ? "object-contain" : "object-cover";
 
   useEffect(() => {
-    if (!project.video || shouldLoadVideo) {
+    if (!hasVideo || shouldLoadVideo) {
       return;
     }
 
@@ -445,14 +447,18 @@ function ProjectMedia({ project }: { project: FeaturedProject }) {
     observer.observe(media);
 
     return () => observer.disconnect();
-  }, [project.video, shouldLoadVideo]);
+  }, [hasVideo, shouldLoadVideo]);
 
   return (
-    <div
+    <motion.div
       ref={mediaRef}
-      className={`relative min-h-[260px] overflow-hidden sm:min-h-[360px] ${
+      className={`relative min-h-[260px] overflow-hidden [--video-focus-x:0px] sm:min-h-[360px] lg:[--video-focus-x:56px] ${
         project.imageFit === "contain" ? "bg-[#f5f9ff]" : "bg-[#171512]"
       }`}
+      initial={hasVideo ? { x: "var(--video-focus-x)", scale: 1.1 } : false}
+      whileInView={hasVideo ? { x: 0, scale: 1 } : undefined}
+      viewport={{ once: true, amount: 0.55 }}
+      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
     >
       {project.video && shouldLoadVideo ? (
         <video
@@ -476,7 +482,35 @@ function ProjectMedia({ project }: { project: FeaturedProject }) {
           className={`transition duration-700 hover:scale-[1.03] ${fitClass}`}
         />
       )}
-    </div>
+      {hasVideo ? (
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-10 grid place-items-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: [0, 1, 1, 0] }}
+          viewport={{ once: true, amount: 0.6 }}
+          transition={{
+            duration: 1.55,
+            ease: "easeOut",
+            times: [0, 0.18, 0.72, 1],
+          }}
+          aria-hidden="true"
+        >
+          <motion.span
+            className="grid size-16 place-items-center rounded-full border border-white/70 bg-white/88 text-[#171512] shadow-[0_18px_42px_rgba(0,0,0,0.28)] backdrop-blur-md"
+            initial={{ scale: 0.72 }}
+            whileInView={{ scale: [0.72, 1.08, 1, 0.92] }}
+            viewport={{ once: true, amount: 0.6 }}
+            transition={{
+              duration: 1.55,
+              ease: [0.22, 1, 0.36, 1],
+              times: [0, 0.22, 0.72, 1],
+            }}
+          >
+            <Play className="ml-1 size-7 fill-current" />
+          </motion.span>
+        </motion.div>
+      ) : null}
+    </motion.div>
   );
 }
 
