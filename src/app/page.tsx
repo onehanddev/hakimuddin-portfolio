@@ -573,16 +573,28 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="relative hidden md:block">
-            <div className="overflow-hidden rounded-lg border border-[#d8d0c2] bg-white shadow-[0_18px_50px_rgba(34,26,17,0.08)]">
-              <div className="relative aspect-[4/3]">
+          <div className="relative mx-auto hidden w-full max-w-[300px] md:block lg:max-w-none">
+            <motion.div
+              className="overflow-hidden rounded-[1.75rem] border border-[#d8d0c2] bg-white shadow-[0_18px_50px_rgba(34,26,17,0.08)]"
+              initial={{ opacity: 0, y: 18, rotate: -1.5, scale: 0.98 }}
+              whileInView={{ opacity: 1, y: 0, rotate: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.55 }}
+              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{
+                y: -6,
+                rotate: 0.6,
+                scale: 1.015,
+                transition: { duration: 0.28, ease: "easeOut" },
+              }}
+            >
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                   src="/hakimuddin.jpg"
                   alt="Hakimuddin Haweliwala"
                   fill
                   priority
                   sizes="320px"
-                  className="object-cover"
+                  className="object-cover object-top transition duration-700 hover:scale-105"
                 />
               </div>
               <div className="border-t border-[#eee6da] p-4">
@@ -595,7 +607,7 @@ export default function Home() {
                   tooling, and startup MVP work.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
